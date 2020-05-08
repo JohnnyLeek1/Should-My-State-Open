@@ -21,6 +21,8 @@ Data is collected daily at 9PM from John Hopkins University
     - https://github.com/CSSEGISandData/COVID-19
     - Data is assumed to be accurate. Confirmed cases include presumptive
       positive cases
+    - Only data from the mainland 48 states + Alaska & Hawaii is parsed and
+      calculated. Territories are not included in this calculation.
 
 """
 
@@ -34,9 +36,10 @@ class DataCollect():
 
     """
     def __init__(self):
-        self.data_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/{}.csv"
+        self.data_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/{}.csv"
         self.data = []
         self.get_data()
+        print(self.data)
 
     def get_data(self):
         """
@@ -68,6 +71,5 @@ class DataCollect():
             else:
                 print("Couldn't find data for %s, attempting previous day..." % str__today_date)
                 today_date = today_date - timedelta(days=1)
-
 
 collect = DataCollect()
