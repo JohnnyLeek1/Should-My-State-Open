@@ -37,9 +37,7 @@ class DataCollect():
     """
     def __init__(self):
         self.data_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/{}.csv"
-        self.data = []
-        self.get_data()
-        print(self.data)
+        data = self.get_data()
 
     def get_data(self):
         """
@@ -48,6 +46,7 @@ class DataCollect():
         inbetween (in order to calculate general trajectory)
         """
         today_date = date.today()
+        data = None
         while True:
             str__today_date = today_date.strftime("%m-%d-%Y")
             print("Attempting to download data from %s..." % str__today_date)
@@ -55,7 +54,8 @@ class DataCollect():
 
             #If we have data for today, use that
             if request != None and request.status_code == 200:
-                self.data.append(pandas.read_csv(io.StringIO(request.content.decode('utf-8'))))
+                data = pandas.read_csv(io.StringIO(request.content.decode('utf-8')))
+                data['Date'] = str__today_date
                 prior_date = today_date - timedelta(days=1)
                 #Get data from every day between 14 days ago and today
                 while prior_date != today_date - timedelta(days=14):
@@ -63,7 +63,9 @@ class DataCollect():
                     prior_request = requests.get(self.data_url.format(str__prior_date))
                     print("Attempting to download data from %s..." % str__prior_date)
                     if prior_request != None and request.status_code == 200:
-                        self.data.append(pandas.read_csv(io.StringIO(request.content.decode('utf-8'))))
+                        prior_data = pandas.read_csv(io.StringIO(request.content.decode('utf-8')))
+                        prior_data['Date'] = str__prior_date
+                        data = pandas.concat([data, prior_data])
                     else:
                         print("Couldn't find data for %s, skipping..." % str__prior_date)
                     prior_date = prior_date - timedelta(days=1)
@@ -71,5 +73,6 @@ class DataCollect():
             else:
                 print("Couldn't find data for %s, attempting previous day..." % str__today_date)
                 today_date = today_date - timedelta(days=1)
+        print(data)
 
 collect = DataCollect()
