@@ -21,3 +21,6 @@ frontend_react/.env.production.local
 frontend_react/npm-debug.log*
 frontend_react/yarn-debug.log*
 frontend_react/yarn-error.log*
+
+/collect_data/__pycache__
+/collect_data/compiled_data-*
