@@ -341,4 +341,5 @@ p.nested {
   margin-top: 5vh;
   width: 100%;
   height: 80vh;
+  transition: all 300ms ease;
 }

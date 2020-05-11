@@ -55,14 +55,14 @@ function App() {
         <p>{state_data['alabama'].most_recent_date}</p>
       </div>
       <Switch>
-        <Route path="/state/:state">
-          <StateView data={state_data}/>
-        </Route>
         <Route path="/map">
           <MapView data={state_data}/>
         </Route>
         <Route path="/sources">
           <Sources/>
+        </Route>
+        <Route path="/:state">
+          <StateView data={state_data}/>
         </Route>
         <Route exact path="/">
           <MainView data={state_data}/>

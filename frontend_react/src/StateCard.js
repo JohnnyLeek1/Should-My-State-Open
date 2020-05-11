@@ -7,10 +7,9 @@ export default function StateCard(props) {
   const state_data = props.data[1];
 
   const most_recent_date = moment(state_data.most_recent_date, 'MM-DD-YYYY');
-  const prior_date = moment(state_data.most_recent_date, 'MM-DD-YYYY');
-  //prior_date.setDate(prior_date.getDate() - 14);
+  const prior_date = moment(state_data.most_recent_date, 'MM-DD-YYYY').subtract(14, "days");
   return (
-      <div className="state-card" onClick={() => window.location.href =`/state/${state_name}`}>
+      <div className="state-card" onClick={() => window.location.href =`/${state_name}`}>
         <div className="card-contents">
           <h3 className="state-title">{state_name.toUpperCase()}</h3>
           <h4 className={`should-open-text ${state_data.should_open ? 'yes' : 'no'}`}>

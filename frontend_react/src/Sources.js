@@ -33,6 +33,12 @@ export default function Sources() {
             - Only data from the mainland 48 states, Alaska, Hawaii, and D.C is parsed and
               calculated
           </li>
+          <li>
+            - A "Downward Trajectory of Covid/Flu-like illness symptoms within a 14
+              day period." is considered equal to the decrease in reported active
+              cases over this period, as this data is volatile and difficult to
+              prove
+          </li>
         </ul>
         <br/><br/>
         <p>

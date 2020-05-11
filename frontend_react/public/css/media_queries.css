@@ -43,3 +43,10 @@
     min-width: 92vw;
   }
 }
+
+@media only screen and (max-width: 800px) {
+  #map-container {
+    margin-top: -30vh;
+    height: 100vh;
+  }
+}
