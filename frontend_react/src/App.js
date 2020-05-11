@@ -8,6 +8,7 @@ import {
 
 import MainView from './MainView';
 import StateView from './StateView';
+import MapView from './MapView';
 import Sources from './Sources';
 
 function App() {
@@ -26,6 +27,12 @@ function App() {
             <NavLink to="/" className="nav-link" activeClassName="nav-active" exact={true}>
               <span className="material-icons">public</span>
               <span className="link-text">State List</span>
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <NavLink to="/map" className="nav-link" activeClassName="nav-active" exact={true}>
+              <span className="material-icons">map</span>
+              <span className="link-text">Map View</span>
             </NavLink>
           </li>
           <li className="nav-item">
@@ -50,6 +57,9 @@ function App() {
       <Switch>
         <Route path="/state/:state">
           <StateView data={state_data}/>
+        </Route>
+        <Route path="/map">
+          <MapView data={state_data}/>
         </Route>
         <Route path="/sources">
           <Sources/>

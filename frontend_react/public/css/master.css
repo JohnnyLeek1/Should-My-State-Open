@@ -325,3 +325,20 @@ p.nested {
   width: 15rem;
   margin: auto;
 }
+
+#map-view-container {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  vertical-align: middle;
+  margin: auto;
+}
+
+#map-container {
+  margin-top: 5vh;
+  width: 100%;
+  height: 80vh;
+}
