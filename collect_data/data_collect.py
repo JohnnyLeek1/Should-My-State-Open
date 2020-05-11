@@ -21,7 +21,8 @@ Data is collected daily at 9PM from John Hopkins University
     - https://github.com/CSSEGISandData/COVID-19
     - Data is assumed to be accurate. Confirmed cases include presumptive
       positive cases
-    - Only data from the mainland 48 states + Alaska & Hawaii is parsed and
+    - A positive test counts as an active case
+    - Only data from the mainland 48 states, Alaska, Hawaii, and D.C is parsed and
       calculated. Territories are not included in this calculation.
 """
 
@@ -42,6 +43,7 @@ class DataCollect():
         self.data = self.get_data()
         self.state_cases = self.get_cases_trend()
         self.state_hospitals = self.get_hospital_capacity()
+        self.state_tests = self.get_test_trend()
 
         self.compile_data()
 
@@ -62,9 +64,10 @@ class DataCollect():
             if request != None and request.status_code == 200:
                 data = pandas.read_csv(io.StringIO(request.content.decode('utf-8')))
                 data['date'] = str__today_date
+                self.most_recent_date = str__today_date
                 prior_date = today_date - timedelta(days=1)
                 #Get data from every day between 14 days ago and today
-                while prior_date != today_date - timedelta(days=14):
+                while prior_date != today_date - timedelta(days=15):
                     str__prior_date = prior_date.strftime("%m-%d-%Y")
                     prior_request = requests.get(self.data_url.format(str__prior_date))
                     print("Attempting to download data from %s..." % str__prior_date)
@@ -132,6 +135,26 @@ class DataCollect():
         print("States that meet hospital guidelines: \n{}".format(json.dumps(state_hospitals, indent=2)))
         return state_hospitals
 
+    def get_test_trend(self):
+        """
+        Calculates which states meet the guideline:
+        "Downward Trajectory of positive tests within 14 days
+            (flat or increasing volume of tests)"
+
+        Grabs the number of people tested and active cases per state and
+        calculates the slope of both lines.
+
+        If (active cases <= 0 && tests >= 0), then it meets the guideline.
+        If the above expression is not true, then it does not meet the guideline.
+        """
+        state_tests = {}
+        for state in state_codes.keys():
+            state_data = self.data.loc[self.data['province_state'] == state]
+            df = pandas.DataFrame(state_data, columns=['people_tested', 'active'])
+            df = df.reset_index(drop=True)
+            state_tests[state] = (self.is_downward_trend(df, 'active') & self.is_upward_trend(df, 'people_tested'))
+        return state_tests
+
     def get_case_info(self, state):
         """
         Returns information about cases over the 14 day period for a given
@@ -139,14 +162,17 @@ class DataCollect():
             - Net change in new cases
             - Cases at beginning of 14 days
             - Cases at end of 14 days
+            - Number of people tested
         """
         case_info = {}
         state_data = self.data.loc[self.data['province_state'] == state.lower()]
-        df = pandas.DataFrame(state_data, columns=['active'])
+        df = pandas.DataFrame(state_data, columns=['active', 'confirmed', 'people_tested'])
         df = df.reset_index(drop=True)
         case_info["beginning"] = df.iloc[0]['active']
         case_info["end"] = df.iloc[-1]['active']
         case_info["net"] = df.iloc[-1]['active'] - df.iloc[0]['active']
+        case_info["total"] = df.iloc[-1]['confirmed']
+        case_info["total_tests"] = df.iloc[-1]['people_tested']
         return case_info
 
     def get_slope(self, data, column):
@@ -161,9 +187,14 @@ class DataCollect():
         Determines if the trend is downward (slope is negative)
         """
         slope = self.get_slope(data, column)
-        if slope <= 0:
-            return True
-        return False
+        return True if slope <= 0 else False
+
+    def is_upward_trend(self, data, column):
+        """
+        Determines if the trend is upward (slope is positive)
+        """
+        slope = self.get_slope(data, column)
+        return True if slope >= 0 else False
 
     def compile_data(self):
         """
@@ -181,6 +212,11 @@ class DataCollect():
             data[state]["beginning_cases"] = case_info["beginning"]
             data[state]["end_cases"] = case_info["end"]
             data[state]["net_case_change"] = case_info["net"]
+            data[state]["total_cases"] = case_info["total"]
+            data[state]["enough_tests"] = self.state_tests[state]
+            data[state]["total_tests"] = case_info["total_tests"]
+            data[state]["should_open"] = (self.state_cases[state] & self.state_hospitals[state] & self.state_tests[state])
+            data[state]["most_recent_date"] = self.most_recent_date
 
         with open('compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), 'w') as outfile:
             json.dump(data, outfile)

@@ -1,0 +1,45 @@
+/* Large Screen devices */
+@media only screen and (min-width: 800px) {
+  .navbar:hover {
+    width: 20rem;
+  }
+
+  .navbar:hover .link-text {
+    display: inline;
+  }
+
+  .navbar:hover .brand-text {
+    left: 5rem;
+  }
+}
+
+/* Last Updated */
+@media only screen and (max-width: 1164px) {
+  #last-updated-container {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+  }
+}
+
+@media only screen and (min-width: 1165px) {
+  #last-updated-container {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+/* Mobile Devices */
+@media only screen and (max-width: 600px) {
+  :root {
+    font-size: 12px;
+  }
+
+  #page-content {
+    margin: auto auto auto 100px;
+  }
+
+  .state-card {
+    min-width: 92vw;
+  }
+}
