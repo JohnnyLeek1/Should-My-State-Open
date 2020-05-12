@@ -163,7 +163,7 @@ body {
   min-width: 450px;
 
   height: 30vh;
-  min-height: 261px;
+  min-height: 300px;
 
   margin: 10px;
   background: var(--card_primary);

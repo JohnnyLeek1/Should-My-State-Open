@@ -10,6 +10,7 @@ frontend_react/.pnp.js
 
 # production
 /frontend_react/build
+/frontend_react/public/data/*
 
 # misc
 frontend_react/.DS_Store
@@ -24,4 +25,4 @@ frontend_react/yarn-error.log*
 
 /collect_data/__pycache__
 /collect_data/compiled_data-*
-/collect_data/password
+/collect_data/*credentials

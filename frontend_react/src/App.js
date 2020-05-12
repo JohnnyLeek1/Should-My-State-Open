@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -12,7 +12,14 @@ import MapView from './MapView';
 import Sources from './Sources';
 
 function App() {
-  const state_data = require('./compiled_data.json');
+  const [state_data, setStateData] = useState(require('./compiled_data.json'));
+
+  useEffect(() => {
+    fetch('/data/compiled_data.json')
+      .then(response => response.json())
+      .then(data => setStateData(data))
+  }, []);
+
   return (
     <Router>
       <nav className="navbar">

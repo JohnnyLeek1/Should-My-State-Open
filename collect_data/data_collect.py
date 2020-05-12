@@ -26,8 +26,9 @@ Data is collected daily at 9PM from John Hopkins University
       calculated. Territories are not included in this calculation.
 """
 
-import requests, time, io, pandas, numpy, json
-from datetime import date, timedelta
+import requests, time, io, pandas, numpy, json, smtplib, ssl, csv, schedule
+from datetime import datetime, date, timedelta
+from ftplib import FTP
 
 from state_code import state_codes
 from hospital_capacity import hospital_capacity
@@ -40,12 +41,22 @@ class DataCollect():
     """
     def __init__(self):
         self.data_url = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports_us/{}.csv"
+        self.set_data()
+
+        print("Script is now running. Waiting to collect and upload data...")
+
+        schedule.every().day.at("00:01").do(self.set_data)
+        schedule.every().day.at("00:02").do(self.upload_data_or_email)
+        self.run_automated_tasks()
+
+    def set_data(self):
+        """
+        Sets variables (to be run every night at midnight)
+        """
         self.data = self.get_data()
         self.state_cases = self.get_cases_trend()
         self.state_hospitals = self.get_hospital_capacity()
         self.state_tests = self.get_test_trend()
-
-        self.compile_data()
 
     def get_data(self):
         """
@@ -92,6 +103,8 @@ class DataCollect():
 
         #Reverse dataframe (so the latest day is at the top)
         data = data.iloc[::-1]
+
+        print("Data retrieved!")
 
         return data
 
@@ -222,7 +235,76 @@ class DataCollect():
             json.dump(data, outfile)
 
         print("Successfully wrote data to json file. Result: {}".format(json.dumps(data, indent=2)))
+
+        #Upload file to FTP server
+        try:
+            ftp = FTP('ftp.shouldmystateopen.com')
+            username = ""
+            password = ""
+            with open('credentials', 'r') as ftp_credentials:
+                csv_reader = csv.reader(ftp_credentials, delimiter=',')
+                for row in csv_reader:
+                    username = row[0]
+                    password = row[1]
+            ftp.login(username, password)
+            with open('compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), 'rb') as writefile:
+                ftp.storbinary('STOR %s' % '/public_html/data/compiled_data.json', writefile)
+            ftp.quit()
+        except Exception as e:
+            print("An Exception Occurred:\n {}".format(e))
+            self.exception_message = e
+            return False
+
+        self.exception_message = "Test Exception..."
         return True
 
+    def send_error_email(self):
+        """
+        Sends an error email to johnnyleek2001@gmail.com using provided
+        credentials if something goes wrong
+        """
+        email_user = ""
+        email_password = ""
+        with open('email_credentials', 'r') as email_credentials:
+            csv_reader = csv.reader(email_credentials, delimiter=',')
+            for row in csv_reader:
+                email_user = row[0]
+                email_password = row[1]
+        message = """\
+        Subject: WEB ERROR shouldmystateopen.com
+
+        WEB ERROR OCCURRED @ https://shouldmystateopen.com (FTP UPLOAD)
+        Date: {date} | Time: {time}
+        Exception message as follows:
+        {error}
+        """.format(date=date.today().strftime("%m-%d-%Y"),
+                   time=datetime.now().strftime("%H:%M:%S"),
+                   error=self.exception_message if self.exception_message else "No message provided."
+                  )
+        ssl._create_default_https_context = ssl._create_unverified_context
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as email_server:
+            try:
+                email_server.login(email_user, email_password)
+                email_server.sendmail(email_user, "johnnyleek2001@gmail.com", message)
+                self.exception_message = None
+            except Exception as e:
+                print("Couldn't send email...\n{}".format(e))
+            finally:
+                email_server.quit()
+
+    def upload_data_or_email(self):
+        """
+        Attempts to upload FTP data, else send email error
+        """
+        if not self.compile_data():
+            self.send_error_email()
+
+    def run_automated_tasks(self):
+        """
+        Runs scheduled tasks
+        """
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
 collect = DataCollect()
