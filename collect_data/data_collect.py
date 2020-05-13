@@ -45,10 +45,9 @@ class DataCollect():
 
         print("Script is now running. Waiting to collect and upload data...")
 
-        self.upload_data_or_email()
-        #schedule.every().day.at("00:01").do(self.set_data)
-        #schedule.every().day.at("00:02").do(self.upload_data_or_email)
-        #self.run_automated_tasks()
+        schedule.every().day.at("00:01").do(self.set_data)
+        schedule.every().day.at("00:02").do(self.upload_data_or_email)
+        self.run_automated_tasks()
 
     def set_data(self):
         """
