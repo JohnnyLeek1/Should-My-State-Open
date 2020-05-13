@@ -19,6 +19,10 @@ export default function MapView(props) {
     mapTemplate.tooltipText = "{name}: {open}";
     mapTemplate.fill = am4core.color("#333");
 
+    mapTemplate.events.on("hit", (e) => {
+      window.location.href=`/${e.target.dataItem.dataContext.name}`;
+    });
+
     let state_data = [];
     Object.entries(props.data)
       .map(state => state_data.push({
@@ -26,10 +30,9 @@ export default function MapView(props) {
          "fill": state[1].should_open ? am4core.color('#8ACB88') : am4core.color('#D92328'),
          "open": state[1].should_open ? 'Can Open' : 'Should not open'
        }));
-    console.log(state_data)
     mapGeoData.data = state_data;
     mapTemplate.propertyFields.fill = "fill";
-  }, []);
+  }, [props.data]);
 
   return (
     <>

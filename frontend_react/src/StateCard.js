@@ -1,7 +1,6 @@
 import React from 'react';
 
 export default function StateCard(props) {
-  console.log(props.data[1])
   var moment = require('moment');
   const state_name = props.data[0];
   const state_data = props.data[1];

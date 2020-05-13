@@ -45,9 +45,10 @@ class DataCollect():
 
         print("Script is now running. Waiting to collect and upload data...")
 
-        schedule.every().day.at("00:01").do(self.set_data)
-        schedule.every().day.at("00:02").do(self.upload_data_or_email)
-        self.run_automated_tasks()
+        self.upload_data_or_email()
+        #schedule.every().day.at("00:01").do(self.set_data)
+        #schedule.every().day.at("00:02").do(self.upload_data_or_email)
+        #self.run_automated_tasks()
 
     def set_data(self):
         """
@@ -247,9 +248,11 @@ class DataCollect():
                     username = row[0]
                     password = row[1]
             ftp.login(username, password)
+            ftp.cwd('/public_html/data/')
             with open('compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), 'rb') as writefile:
-                ftp.storbinary('STOR %s' % '/public_html/data/compiled_data.json', writefile)
+                ftp.storbinary('STOR %s' % 'compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), writefile)
             ftp.quit()
+            print("Successfully uploaded data!")
         except Exception as e:
             print("An Exception Occurred:\n {}".format(e))
             self.exception_message = e

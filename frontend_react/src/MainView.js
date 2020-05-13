@@ -23,7 +23,7 @@ export default function MainView(props) {
       <h2 className="page-subtitle">Currently: <span className="technically">{get_total_open_states}/51</span> states meet the guidelines to open.</h2>
 
       <div id="filter-container">
-        <input className="text-input" type="text" value={filterInput} placeHolder="Enter State..." onChange={filterStates} autoComplete="off"/>
+        <input className="text-input" type="text" value={filterInput} placeholder="Enter State..." onChange={filterStates} autoComplete="off"/>
       </div>
 
       <div className="state-card-container">

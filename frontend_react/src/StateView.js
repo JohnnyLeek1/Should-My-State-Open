@@ -2,13 +2,23 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 export default function StateView(props) {
+  const capitalize = (string) => {
+    let words = string.split(' ');
+    words.forEach((word, index) => {
+      words[index] = word.toLowerCase();
+      words[index] = word[0].toUpperCase() + word.slice(1);
+    });
+    return words.join(' ');
+  }
 
   let { state } = useParams();
+  state = state.toLowerCase();
 
-  let readableStateName = state.toLowerCase();
-  readableStateName = readableStateName[0].toUpperCase() + readableStateName.slice(1);
+  let readableStateName = capitalize(state)
 
   let stateFound = (state.toLowerCase() in props.data)
+
+
 
   const NotFoundPanel = () => {
     return (
@@ -81,8 +91,8 @@ export default function StateView(props) {
               Be able to treat all patients WITHOUT crisis care.
               <ul className="panel-list nested">
                 <li className="text">
-                  {readableStateName} has {props.data[state].total_hospital_capacity} hospital beds
-                  and {props.data[state].end_cases} current active cases.
+                  {readableStateName} has {props.data[state].total_hospital_capacity.toLocaleString()} hospital beds
+                  and {props.data[state].end_cases.toLocaleString()} current active cases.
                 </li>
               </ul>
             </li>
