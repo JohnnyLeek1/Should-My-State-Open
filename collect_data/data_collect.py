@@ -30,6 +30,9 @@ import requests, time, io, pandas, numpy, json, smtplib, ssl, csv, schedule
 from datetime import datetime, date, timedelta
 from ftplib import FTP
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+
 from state_code import state_codes
 from hospital_capacity import hospital_capacity
 
@@ -44,6 +47,7 @@ class DataCollect():
         self.set_data()
 
         print("Script is now running. Waiting to collect and upload data...")
+        self.upload_data_or_email()
 
         schedule.every().day.at("00:01").do(self.set_data)
         schedule.every().day.at("00:02").do(self.upload_data_or_email)
@@ -214,50 +218,39 @@ class DataCollect():
         Compiles all data into one coherent json file to be parsed by the
         frontend
         """
-        data = {}
+        data = { "info": {} }
         for state in state_codes.keys():
             case_info = self.get_case_info(state)
-            data[state] = {}
-            data[state]["state_code"] = state_codes[state]
-            data[state]["total_hospital_capacity"] = hospital_capacity[state_codes[state]]
-            data[state]["downward_cases"] = self.state_cases[state]
-            data[state]["enough_hospital_capacity"] = self.state_hospitals[state]
-            data[state]["beginning_cases"] = case_info["beginning"]
-            data[state]["end_cases"] = case_info["end"]
-            data[state]["net_case_change"] = case_info["net"]
-            data[state]["total_cases"] = case_info["total"]
-            data[state]["enough_tests"] = self.state_tests[state]
-            data[state]["total_tests"] = case_info["total_tests"]
-            data[state]["should_open"] = (self.state_cases[state] & self.state_hospitals[state] & self.state_tests[state])
-            data[state]["most_recent_date"] = self.most_recent_date
+            data["info"][state] = {}
+            data["info"][state]["state_code"] = state_codes[state]
+            data["info"][state]["total_hospital_capacity"] = hospital_capacity[state_codes[state]]
+            data["info"][state]["downward_cases"] = self.state_cases[state]
+            data["info"][state]["enough_hospital_capacity"] = self.state_hospitals[state]
+            data["info"][state]["beginning_cases"] = case_info["beginning"]
+            data["info"][state]["end_cases"] = case_info["end"]
+            data["info"][state]["net_case_change"] = case_info["net"]
+            data["info"][state]["total_cases"] = case_info["total"]
+            data["info"][state]["enough_tests"] = self.state_tests[state]
+            data["info"][state]["total_tests"] = case_info["total_tests"]
+            data["info"][state]["should_open"] = (self.state_cases[state] & self.state_hospitals[state] & self.state_tests[state])
+            data["info"][state]["most_recent_date"] = self.most_recent_date
 
-        with open('compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), 'w') as outfile:
-            json.dump(data, outfile)
+        print("Successfully parsed data into json file. Result:\n")
+        print(json.dumps(data, indent=2))
 
-        print("Successfully wrote data to json file. Result: {}".format(json.dumps(data, indent=2)))
-
-        #Upload file to FTP server
+        #Upload file to firebase
+        creds = credentials.Certificate('credentials.json')
+        firebase_admin.initialize_app(creds, { 'databaseURL': 'https://should-my-state-open.firebaseio.com' })
         try:
-            ftp = FTP('ftp.shouldmystateopen.com')
-            username = ""
-            password = ""
-            with open('credentials', 'r') as ftp_credentials:
-                csv_reader = csv.reader(ftp_credentials, delimiter=',')
-                for row in csv_reader:
-                    username = row[0]
-                    password = row[1]
-            ftp.login(username, password)
-            ftp.cwd('/public_html/data/')
-            with open('compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), 'rb') as writefile:
-                ftp.storbinary('STOR %s' % 'compiled_data-{}.json'.format(date.today().strftime("%m-%d-%Y")), writefile)
-            ftp.quit()
-            print("Successfully uploaded data!")
+            database = firestore.client()
+            collection = database.collection('data')
+            data['createdAt'] = datetime.now()
+            collection.document().create(data)
         except Exception as e:
-            print("An Exception Occurred:\n {}".format(e))
+            print(f"An exception Occurred:\n {e}")
             self.exception_message = e
             return False
 
-        self.exception_message = "Test Exception..."
         return True
 
     def send_error_email(self):

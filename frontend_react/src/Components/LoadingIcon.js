@@ -1,5 +1,9 @@
 import React from 'react';
 
+/**
+ * An animated loading icon to be displayed
+ * when the data is being loaded
+ */
 export default function LoadingIcon() {
   return (
     <div id="loading-container">

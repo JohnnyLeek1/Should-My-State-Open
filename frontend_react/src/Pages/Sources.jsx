@@ -1,5 +1,8 @@
 import React from 'react';
 
+/**
+ * Credits and Sources page
+ */
 export default function Sources() {
   return (
     <div id="sources-panel">

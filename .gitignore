@@ -14,6 +14,7 @@ frontend_react/.pnp.js
 
 # misc
 frontend_react/.DS_Store
+frontend_react/.env
 frontend_react/.env.local
 frontend_react/.env.development.local
 frontend_react/.env.test.local
@@ -25,4 +26,4 @@ frontend_react/yarn-error.log*
 
 /collect_data/__pycache__
 /collect_data/compiled_data-*
-/collect_data/*credentials
+/collect_data/credentials.json
