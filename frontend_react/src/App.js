@@ -72,7 +72,7 @@ export default function App() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <a href="https://github/johnnyleek1/should-my-state-open" target="_blank" rel="noopener noreferrer" className="nav-link">
+                  <a href="https://github.com/johnnyleek1/should-my-state-open" target="_blank" rel="noopener noreferrer" className="nav-link">
                     <span className="material-icons">sentiment_satisfied</span>
                     <span className="link-text">Made by Johnny Leek</span>
                   </a>
