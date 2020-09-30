@@ -39,8 +39,6 @@ export default function App() {
         .finally(console.log(stateData))
     }, []);
 
-    useEffect(() => console.log(stateData), [stateData]);
-
     /**
      * If page is NOT loading, render the page, else render
      * a loading icon

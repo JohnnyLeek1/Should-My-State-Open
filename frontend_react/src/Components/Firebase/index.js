@@ -24,11 +24,10 @@ export const setData = async(setUpdatedDate, setDataState) => {
                                  .reduce((acc, key) => ({
                                     ...acc, [key]: data.info[key]
                                  }), {})
-            console.log(data.createdAt);
             await setUpdatedDate(data.createdAt.toDate());
             await setDataState(sorted);
         })
-       // .catch(error => console.log(error.message));
+       .catch(error => console.error("Error querying database: ", error.message));
 }
 
 export default {
