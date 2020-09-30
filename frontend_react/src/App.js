@@ -36,7 +36,6 @@ export default function App() {
     useEffect(() => {
         setData(setUpdatedDate, setStateData)
         .then(setIsLoading(false))
-        .finally(console.log(stateData))
     }, []);
 
     /**
